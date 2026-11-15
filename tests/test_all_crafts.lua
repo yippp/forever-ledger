@@ -248,7 +248,8 @@ T.test("No two of the addon's files set the same ns name", function()
     local file = line:gsub("\r", "")
     if file:match("%.lua$") then
       local seen = {}
-      for l in io.lines(file) do
+      -- The .toc uses Windows separators; io.open doesn't understand them elsewhere.
+      for l in io.lines((file:gsub("\\", "/"))) do
         local name, after = l:match("^ns%.([%w_]+)%s*=(.?)")
         if name and after ~= "=" and not seen[name] then
           seen[name] = true

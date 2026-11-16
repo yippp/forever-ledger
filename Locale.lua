@@ -38,7 +38,7 @@ local function buildPatterns()
   patterns = {}
   for english, translated in pairs(strings) do
     if english:find(spec) and #english:gsub(spec, ""):gsub("[^%a]", "") >= 5 or (language.short and language.short[english]) then
-      local parts, at, count, typed, kinds = {}, 1, 0, 0, {}
+      local parts, at, count, typed, kinds, numeric = {}, 1, 0, 0, {}, nil
       local anchor = ""
       while true do
         local first, last = english:find(spec, at)
@@ -59,6 +59,7 @@ local function buildPatterns()
         end
         kinds[count + 1] = opaque and "opaque" or (before:sub(-4) == "|cff" or before:sub(-2) == "|c") and "color" or conversion
         if conversion ~= "s" and conversion ~= "q" then typed = typed + 1 end
+        if not numeric and conversion:find("[diu]") then numeric = count + 1 end
         if before:sub(-4) == "|cff" then
           parts[#parts + 1] = "(%x%x%x%x%x%x)"
         elseif before:sub(-2) == "|c" then
@@ -82,7 +83,7 @@ local function buildPatterns()
       local tail = english:sub(at):gsub("%%%%", "%%")
       if #tail > #anchor then anchor = tail end
       parts[#parts + 1] = escapePattern(tail)
-      patterns[#patterns + 1] = { anchor = anchor, pattern = "^" .. table.concat(parts) .. "$", text = translated, count = count, typed = typed, kinds = kinds, container = english == "%s (%s)" or english == "%s, %s", markup = english:find("|H",1,true) or english:find("|T",1,true) or english:find("|A",1,true) or english:find("|K",1,true), rank = #english:gsub(spec, ""), first = english:sub(1, 1) ~= "%" and english:sub(1, 1) or nil }
+      patterns[#patterns + 1] = { anchor = anchor, pattern = "^" .. table.concat(parts) .. "$", text = translated, forms = type(translated) == "table" and translated or nil, numeric = numeric, count = count, typed = typed, kinds = kinds, container = english == "%s (%s)" or english == "%s, %s", markup = english:find("|H",1,true) or english:find("|T",1,true) or english:find("|A",1,true) or english:find("|K",1,true), rank = #english:gsub(spec, ""), first = english:sub(1, 1) ~= "%" and english:sub(1, 1) or nil }
     end
   end
   table.sort(patterns, function(a, b)
@@ -114,8 +115,16 @@ local function translatePattern(text, depth, markupOnly)
         for _, capture in ipairs(captures) do if capture:find("[()]") then valid=false;break end end
       end
       if valid then
+        -- A locale may give three forms of a counted noun (1 день, 2 дня, 5 дней):
+        -- the form is chosen by the first number the message shows.
+        local template = row.text
+        if row.forms then
+          local number = row.numeric and tonumber((captures[row.numeric]:gsub("[^%d%-]", "")))
+          local form = language.forms and number and language.forms(number) or 1
+          template = row.forms[form] or row.forms[1]
+        end
         local index=0
-        return (row.text:gsub(spec,function()
+        return (template:gsub(spec,function()
           index=index+1
           if row.kinds[index]=="s" or row.kinds[index]=="q" then return localize(captures[index],depth+1) end
           return captures[index]
@@ -128,6 +137,7 @@ local function remember(source, result) return save(cache, source, result) end
 localize = function(text, depth)
   if not language or (issecretvalue and issecretvalue(text)) or type(text) ~= "string" then return text end
   local direct = strings[text] or (language.upper and language.upper[text])
+  if type(direct) == "table" then direct = nil end   -- a plural template, not a whole line
   if direct then return direct end
   if depth >= 16 or text == "" then return text end
   local saved = cached(cache, text)

@@ -4,7 +4,9 @@ local function loadLocale(locale)
   GetLocale = function() return locale end
   local ns = {}
   local ok, err = pcall(function()
-    for _, file in ipairs({ "Locale.lua", "Locales/zhCN.lua" }) do
+    local files = locale == "ruRU" and { "Locale.lua", "Locales/ruRU.lua" }
+      or { "Locale.lua", "Locales/zhCN.lua" }
+    for _, file in ipairs(files) do
       assert(loadfile(file))("ForeverLedger", ns)
     end
   end)
@@ -523,4 +525,53 @@ T.test("Localization: recent upstream settings and sessions stay Chinese", funct
   end
   T.ok(ns.LocalizeText("Auction price (%s)"):format("AHledger")
     :find("拍卖行价格", 1, true))
+end)
+
+T.test("Localization: the Russian table is complete and keeps placeholders", function()
+  local ns = loadLocale("ruRU")
+  local spec = "%%[%-%+#0]*%d*%.?%d*[cdiouxXeEfgGqs]"
+  local entries = 0
+  for source, target in pairs(ns.GetLocaleData().strings) do
+    local forms = type(target) == "table" and target or { target }
+    local original = {}
+    for token in source:gmatch(spec) do original[#original + 1] = token:sub(-1) end
+    for _, form in ipairs(forms) do
+      local translated = {}
+      for token in form:gmatch(spec) do translated[#translated + 1] = token:sub(-1) end
+      T.same(original, translated, source)
+    end
+    entries = entries + 1
+  end
+  T.ok(entries > 1000, "the Russian table covers the addon's text")
+  T.eq(ns.LocalizeText("Buy"), "Купить")
+  T.eq(ns.LocalizeText("Week"), "Неделя")
+  T.eq(ns.LocalizeText("WEEK"), "Неделя")
+  T.eq(ns.LocalizeText("Item level 21-25 blue armor"), "Уровень предмета 21-25: синяя броня")
+  T.eq(ns.LocalizeText("Item level 5-10 green armor"), "Зелёная броня, уровень предмета 5-10")
+end)
+
+T.test("Localization: Russian counted nouns take the form the number needs", function()
+  local ns = loadLocale("ruRU")
+  T.eq(ns.LocalizeText("Only 1 day of your own scans."), "Всего 1 день ваших проверок.")
+  T.eq(ns.LocalizeText("Only 2 days of your own scans."), "Всего 2 дня ваших проверок.")
+  T.eq(ns.LocalizeText("Only 4 days of your own scans."), "Всего 4 дня ваших проверок.")
+  T.eq(ns.LocalizeText("Only 5 days of your own scans."), "Всего 5 дней ваших проверок.")
+  T.eq(ns.LocalizeText("Only 11 days of your own scans."), "Всего 11 дней ваших проверок.")
+  T.eq(ns.LocalizeText("Only 21 days of your own scans."), "Всего 21 день ваших проверок.")
+  T.eq(ns.LocalizeText("Only 111 days of your own scans."), "Всего 111 дней ваших проверок.")
+  T.eq(ns.LocalizeDisplayText("2 items, search"), "2 предмета, поиск")
+  T.eq(ns.LocalizeDisplayText("5 items, search"), "5 предметов, поиск")
+  T.eq(ns.LocalizeDisplayText("Imported 3 characters and 12 prices."), "Импортировано: персонажей — 3, цен — 12.")
+end)
+
+T.test("Localization: the Russian data file returns immediately on other clients", function()
+  local previous = GetLocale
+  for _, locale in ipairs({ "enUS", "zhCN" }) do
+    GetLocale = function() return locale end
+    local calls = 0
+    local ns = { RegisterLocale = function() calls = calls + 1 end }
+    assert(loadfile("Locales/ruRU.lua"))("ForeverLedger", ns)
+    T.eq(calls, 0, "another client's Russian data was not registered")
+  end
+  GetLocale = previous
 end)

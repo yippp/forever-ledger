@@ -220,6 +220,14 @@ localize = function(text, depth)
 end
 function ns.LocalizeText(text) return localize(text,0) end
 
+-- A message with a counted noun. Russian needs three forms (1 день, 2 дня, 5 дней), so
+-- the number has to be in the text before it is translated: format first, localize the
+-- finished line. A language without forms translates the template and formats it after.
+function ns.LocalizeFormatted(template, ...)
+  if language and language.forms then return ns.LocalizeText(template:format(...)) end
+  return ns.LocalizeText(template):format(...)
+end
+
 -- Units belong to rendered text. Editable prices and exported data keep their input syntax.
 function ns.LocalizeDisplayText(text)
   if (issecretvalue and issecretvalue(text)) or type(text) ~= "string" then return text end

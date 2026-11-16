@@ -1140,7 +1140,7 @@ function ns:RefreshRecipes()
   if trainers then
     f.empty:SetText("No trainers seen yet. Open a profession trainer's window.")
   elseif total > 0 then
-    f.empty:SetText(ns.LocalizeText("%s has %d recipe%s, but none match what's chosen above (%s). Choose All and Any to see them."):format(
+    f.empty:SetText(ns.LocalizeFormatted("%s has %d recipe%s, but none match what's chosen above (%s). Choose All and Any to see them.",
       current, total, total == 1 and "" or "s", table.concat(why, ", ")))
   else
     f.empty:SetText("No recipes yet. Open this profession's window once to record its recipes.")

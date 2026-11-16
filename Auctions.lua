@@ -678,8 +678,8 @@ refresh = function()
   if box and box.money and box.money > 0 then gold[#gold + 1] = ("In your mailbox: |cff7fd39c%s|r (%s)"):format(ns.MoneyPlain(box.money), ns.Age(box.t)) end
   frame.gold:SetText(table.concat(gold, "   "))
   if cancelState == "asking" then
-    frame.info:SetText(ns.LocalizeText("|cffffd100Cancel %d undercut %s and lose %s?|r Click again."):format(
-      #todo, ns.LocalizeText(#todo == 1 and "auction" or "auctions"), ns.LocalizeText(#todo == 1 and "its deposit" or "their deposits")))
+    frame.info:SetText(ns.LocalizeFormatted("|cffffd100Cancel %d undercut %s and lose %s?|r Click again.",
+      #todo, #todo == 1 and "auction" or "auctions", #todo == 1 and "its deposit" or "their deposits"))
   elseif #todo > 0 then
     local e = todo[1]
     frame.info:SetText(("Next: %s x%d, yours %s, cheapest %s.%s"):format(ns.ItemName(e.id), e.q or 1, ns.MoneyPlain(e.each), ns.MoneyPlain(undercutBy(e) or cheapestNow(e) or e.each),

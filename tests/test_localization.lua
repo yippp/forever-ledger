@@ -564,6 +564,31 @@ T.test("Localization: Russian counted nouns take the form the number needs", fun
   T.eq(ns.LocalizeDisplayText("Imported 3 characters and 12 prices."), "Импортировано: персонажей — 3, цен — 12.")
 end)
 
+T.test("Localization: a counted message is formatted before Russian picks the form", function()
+  local ns = loadLocale("ruRU")
+  local cancel = "|cffffd100Cancel %d undercut %s and lose %s?|r Click again."
+  T.eq(ns.LocalizeFormatted(cancel, 1, "auction", "its deposit"),
+    "|cffffd100Отменить 1 перебитый лот и потерять его залог?|r Нажмите ещё раз.")
+  T.eq(ns.LocalizeFormatted(cancel, 2, "auctions", "their deposits"),
+    "|cffffd100Отменить 2 перебитых лота и потерять их залоги?|r Нажмите ещё раз.")
+  T.eq(ns.LocalizeFormatted(cancel, 5, "auctions", "their deposits"),
+    "|cffffd100Отменить 5 перебитых лотов и потерять их залоги?|r Нажмите ещё раз.")
+  T.eq(ns.LocalizeFormatted("%d watched. Green: at or under Up to right now.", 3),
+    "Наблюдаем: 3 предмета. Зелёное — сейчас по «До» или дешевле.")
+  T.eq(ns.LocalizeFormatted("%d of %d items done%s. Open the auction house to search and buy.", 5, 10,
+    (", %d %s short"):format(2, "materials")),
+    "5 из 10 предметов готово (не хватает 2 материалов). Откройте аукцион для поиска и покупки.")
+  T.eq(ns.LocalizeFormatted("Craft them (%d %s)", 2, "crafts"), "Изготовить (2 шт.)")
+  T.eq(ns.LocalizeFormatted("%d new %s below the usual price: see Gold making, Deals (/fl)", 2, "deals"),
+    "2 новые сделки ниже обычной цены: смотрите «Заработок», «Сделки» (/fl)")
+end)
+
+T.test("Localization: a language without forms still translates the template", function()
+  local ns = loadLocale("zhCN")
+  local got = ns.LocalizeFormatted("%d watched. Green: at or under Up to right now.", 3)
+  T.eq(got, "已关注 3 项。绿色表示当前价格未超过最高买入价。")
+end)
+
 T.test("Localization: the Russian data file returns immediately on other clients", function()
   local previous = GetLocale
   for _, locale in ipairs({ "enUS", "zhCN" }) do

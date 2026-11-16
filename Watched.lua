@@ -287,7 +287,7 @@ local function refresh()
   v.content:SetHeight(math.max(#list * ROW_H, ROW_H))
   v.sf.UpdateScrollBar()
   v.empty:SetShown(#list == 0)
-  v.count:SetText(#list == 0 and "" or ns.LocalizeText("%d watched. Green: at or under Up to right now."):format(#list))
+  v.count:SetText(#list == 0 and "" or ns.LocalizeFormatted("%d watched. Green: at or under Up to right now.", #list))
 end
 
 function ns:RefreshWatchedView() refresh() end

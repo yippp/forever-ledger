@@ -56,7 +56,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 - Shared locale support with Simplified Chinese display translations and language-specific fonts. Diagnostic reports and debug logs remain in English.
-- Russian display translations (ruRU): every tab, tooltip and message, three plural forms of counted nouns (1 день, 2 дня, 5 дней) and the Cyrillic UI font. Diagnostic reports and debug logs remain in English.
+- Russian display translations (ruRU): every tab, tooltip and message, three plural forms of counted nouns (1 день, 2 дня, 5 дней), counted messages localized after formatting so the form follows the number, and the Cyrillic UI font. Diagnostic reports and debug logs remain in English.
 - Tooltips: items the Darkmoon Faire takes for Prize Tickets get a coral red line, "Darkmoon Faire: 5 for 1 ticket (Yebb Neblegear)": the animal parts and the Blacksmithing, Engineering and Leatherworking turn-ins (Classic's list). Settings, Tooltips, Darkmoon Faire turn-ins.
 
 ### Changed

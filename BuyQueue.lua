@@ -1898,7 +1898,7 @@ local function laneRow(L, i)
     local e = self.entry
     if e.reason == "flip" and e.affordN and e.n and e.affordN < e.n and e.affordN > 0 then
       ns:TooltipAddLine(ns.LocalizeText("You can afford %d of the %d cheap ones with %s%s, so the profit shown is for those. All %d would make %s."):format(
-        e.affordN, e.n, money(spendable()), spendable() < GetMoney() and " left to spend" or "", e.n, money(e.profit or 0)), 1, 0.82, 0, true)
+        e.affordN, e.n, money(spendable()), spendable() < GetMoney() and ns.LocalizeText(" left to spend") or "", e.n, money(e.profit or 0)), 1, 0.82, 0, true)
     end
     local poor = cantAfford(self.entry)
     if poor then
@@ -2316,9 +2316,10 @@ local function fillLane(L)
     L.pulsing = nil
     L:SetScript("OnUpdate", nil)
   end
-  L.title:SetText(ns.LocalizeText("%s  |cff888888%d to buy|r%s"):format(ns.LocalizeText(d.title), ready,
-    wheel and ("   |cff" .. (lit and hex(c) or "888888") .. (d.key == "flips" and "scroll anywhere here to buy|r" or "scroll here to buy|r"))
-      or "   |cff888888click Buy, or tick Scroll to buy|r"))
+  local hint = wheel and (d.key == "flips" and ns.LocalizeText("scroll anywhere here to buy") or ns.LocalizeText("scroll here to buy"))
+    or ns.LocalizeText("click Buy, or tick Scroll to buy")
+  L.title:SetText(ns.LocalizeFormatted("%s  |cff888888%d to buy|r%s", d.title, ready,
+    "   |cff" .. (lit and hex(c) or "888888") .. hint .. "|r"))
   local a, b, label
   if armed then
     a, b, label = statusText()
@@ -3074,14 +3075,14 @@ local function listRow(i)
       ns:TooltipAddLine(" ")
       ns:TooltipAddLine(ns.LocalizeText("Craft or buy, for the %d still to get:"):format(cob.short), T.accent[1], T.accent[2], T.accent[3])
       ns:TooltipAddDoubleLine("Buy them", cob.buy and ("about " .. ns.Money(cob.buy)) or "none listed", 0.9, 0.9, 0.9, 1, 1, 1)
-      ns:TooltipAddDoubleLine(ns.LocalizeText("Craft them (%d %s)"):format(cob.crafts, cob.crafts == 1 and "craft" or "crafts"),
+      ns:TooltipAddDoubleLine(ns.LocalizeFormatted("Craft them (%d %s)", cob.crafts, cob.crafts == 1 and "craft" or "crafts"),
         cob.craft and (cob.craft == 0 and "you have the materials" or ("about " .. ns.Money(cob.craft) .. " in materials"))
         or "materials not priced", 0.9, 0.9, 0.9, 1, 1, 1)
       if cob.buy and cob.craft and cob.buy ~= cob.craft then
         local craftWins = cob.craft < cob.buy
-        ns:TooltipAddLine(ns.LocalizeText("%s is cheaper by %s.%s"):format(craftWins and "Crafting" or "Buying",
+        ns:TooltipAddLine(ns.LocalizeText("%s is cheaper by %s.%s"):format(ns.LocalizeText(craftWins and "Crafting" or "Buying"),
           ns.Money(math.abs(cob.buy - cob.craft)),
-          (craftWins ~= (r.entry.mode == "craft")) and (" Switch it to " .. (craftWins and "Craft" or "Buy") .. " with the button.") or ""),
+          (craftWins ~= (r.entry.mode == "craft")) and ns.LocalizeText(" Switch it to " .. (craftWins and "Craft" or "Buy") .. " with the button.") or ""),
           0.5, 0.83, 0.61, true)
       end
     end
@@ -3665,7 +3666,7 @@ refreshLists = function()
   elseif craftsReady > 0 and matsShort == 0 and done + craftsReady == #list.items then
     v.info:SetText(ns.LocalizeText("|cff7fd39cYou have all the materials:|r %d to craft, then it's complete."):format(craftsReady))
   elseif not ns:IsAHOpen() then
-    v.info:SetText(estimateText(list) .. ns.LocalizeText("%d of %d items done%s. Open the auction house to search and buy."):format(done, #list.items,
+    v.info:SetText(estimateText(list) .. ns.LocalizeFormatted("%d of %d items done%s. Open the auction house to search and buy.", done, #list.items,
       matsShort > 0 and (", %d %s short"):format(matsShort, matsShort == 1 and "material" or "materials") or ""))
   else
     -- Items at "off" aren't bought; say so, and how to change it.
@@ -3674,10 +3675,10 @@ refreshLists = function()
       if e.mode ~= "craft" and not ns:ListVendorPrice(e.id) and not ns:ItemLimit(list, e) then noPrice = noPrice + 1 end
     end
     if noPrice > 0 then
-      v.info:SetText(ns.LocalizeText("%d %s Up to off, so the queue skips %s: type a price to buy %s."):format(noPrice,
+      v.info:SetText(ns.LocalizeFormatted("%d %s Up to off, so the queue skips %s: type a price to buy %s.", noPrice,
         noPrice == 1 and "item has" or "items have", noPrice == 1 and "it" or "them", noPrice == 1 and "it" or "them"))
     else
-      v.info:SetText(estimateText(list) .. ns.LocalizeText("%d of %d done. %d at your price%s: in the buy queue."):format(done, #list.items, cheap,
+      v.info:SetText(estimateText(list) .. ns.LocalizeFormatted("%d of %d done. %d at your price%s: in the buy queue.", done, #list.items, cheap,
         toBuy > 0 and (", %d %s short"):format(toBuy, toBuy == 1 and "material" or "materials") or ""))
     end
   end
